@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Formatting Paste Spike</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 20px; max-width: 900px; }
+  h2 { margin: 18px 0 6px; }
+  #box {
+    border: 2px dashed #888; border-radius: 6px;
+    min-height: 90px; padding: 10px; font-size: 14px;
+  }
+  .hint { color: #666; font-size: 13px; margin: 4px 0 0; }
+  table { border-collapse: collapse; width: 100%; margin-top: 6px; font-size: 13px; }
+  th, td { border: 1px solid #ccc; padding: 4px 6px; text-align: left; vertical-align: top; }
+  th { background: #eee; }
+  pre { background: #f5f5f5; border: 1px solid #ddd; padding: 8px; overflow: auto; font-size: 12px; white-space: pre-wrap; }
+  .yes { color: #2e7d32; font-weight: bold; }
+  .no { color: #bbb; }
+  button { margin-top: 8px; padding: 6px 12px; }
+</style>
+</head>
+<body>
+
+<h2>1. Paste here</h2>
+<div id="box" contenteditable="true">Paste a real question (with its bold / italic / coloured words) here…</div>
+<p class="hint">Copy a question from your actual source — Word, the questionnaire, wherever your specs live — and paste it into the box above. Then read the tables below.</p>
+<button id="analyze">Analyze what survived</button>
+
+<h2>2. Formatting detected per run</h2>
+<table id="runs"><thead><tr>
+  <th>Text</th><th>Bold</th><th>Italic</th><th>Underline</th>
+  <th>Color</th><th>Font</th><th>Size</th><th>Super/Sub</th>
+</tr></thead><tbody></tbody></table>
+
+<h2>3. Raw pasted HTML (what the browser kept)</h2>
+<pre id="raw"></pre>
+
+<script>
+function styleOf(node) {
+  // Walk up collecting computed-ish style from inline styles + tags
+  let el = node.nodeType === 3 ? node.parentElement : node;
+  const fmt = { bold:false, italic:false, underline:false, color:null, font:null, size:null, vert:null };
+  while (el && el.id !== "box") {
+    const tag = el.tagName ? el.tagName.toLowerCase() : "";
+    const s = el.style || {};
+    const cs = window.getComputedStyle ? getComputedStyle(el) : {};
+
+    if (tag === "b" || tag === "strong") fmt.bold = true;
+    if (tag === "i" || tag === "em") fmt.italic = true;
+    if (tag === "u") fmt.underline = true;
+    if (tag === "sup") fmt.vert = "superscript";
+    if (tag === "sub") fmt.vert = "subscript";
+
+    const fw = s.fontWeight || cs.fontWeight;
+    if (fw && (fw === "bold" || Number(fw) >= 600)) fmt.bold = true;
+    const fsStyle = s.fontStyle || cs.fontStyle;
+    if (fsStyle === "italic") fmt.italic = true;
+    const td = s.textDecoration || s.textDecorationLine || cs.textDecorationLine;
+    if (td && /underline/.test(td)) fmt.underline = true;
+
+    if (!fmt.color && (s.color || cs.color)) fmt.color = s.color || cs.color;
+    if (!fmt.font && (s.fontFamily || cs.fontFamily)) fmt.font = s.fontFamily || cs.fontFamily;
+    if (!fmt.size && (s.fontSize || cs.fontSize)) fmt.size = s.fontSize || cs.fontSize;
+    const va = s.verticalAlign || cs.verticalAlign;
+    if (!fmt.vert && (va === "super" || va === "sub")) fmt.vert = va === "super" ? "superscript" : "subscript";
+
+    el = el.parentElement;
+  }
+  return fmt;
+}
+
+function walk(node, out) {
+  for (const child of node.childNodes) {
+    if (child.nodeType === 3) {
+      const t = child.textContent.replace(/\s+/g, " ");
+      if (t.trim()) out.push({ text: t, fmt: styleOf(child) });
+    } else if (child.nodeType === 1) {
+      walk(child, out);
+    }
+  }
+}
+
+document.getElementById("analyze").addEventListener("click", () => {
+  const box = document.getElementById("box");
+  const runs = [];
+  walk(box, runs);
+
+  const tb = document.querySelector("#runs tbody");
+  tb.innerHTML = "";
+  const mark = (v) => v ? "<span class='yes'>yes</span>" : "<span class='no'>–</span>";
+  runs.forEach(r => {
+    const tr = document.createElement("tr");
+    tr.innerHTML =
+      "<td>" + r.text.replace(/</g,"&lt;") + "</td>" +
+      "<td>" + mark(r.fmt.bold) + "</td>" +
+      "<td>" + mark(r.fmt.italic) + "</td>" +
+      "<td>" + mark(r.fmt.underline) + "</td>" +
+      "<td>" + (r.fmt.color || "<span class='no'>–</span>") + "</td>" +
+      "<td>" + (r.fmt.font || "<span class='no'>–</span>") + "</td>" +
+      "<td>" + (r.fmt.size || "<span class='no'>–</span>") + "</td>" +
+      "<td>" + (r.fmt.vert || "<span class='no'>–</span>") + "</td>";
+    tb.appendChild(tr);
+  });
+
+  document.getElementById("raw").textContent = box.innerHTML;
+});
+</script>
+</body>
+</html>

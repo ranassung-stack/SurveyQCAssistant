@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Survey QC</title>
+  <style>
+    body{
+      width:400px;
+      padding:10px;
+      font-family:Arial;
+    }
+
+    /* Rich paste box: keeps bold/italic/colour from a Word/Docs paste.
+       Styled to look and scroll like the old textarea. */
+    #expectedText{
+      width:100%;
+      box-sizing:border-box;
+      height:250px;
+      overflow:auto;
+      border:1px solid #767676;
+      border-radius:2px;
+      padding:6px;
+      font-size:13px;
+      background:#fff;
+    }
+    #expectedText:empty:before{
+      content:attr(data-placeholder);
+      color:#999;
+    }
+
+    button{
+      margin-top:10px;
+      width:100%;
+      height:40px;
+    }
+
+    #results{
+      margin-top:10px;
+      max-height:230px;
+      overflow-y:auto;
+      overflow-x:auto;
+    }
+
+	.qc-added{
+		background:#fff3a0;
+		padding:1px 3px;
+		border-radius:3px;
+		font-weight:bold;
+	}
+
+	.qc-missing{
+		background:#ffd6d6;
+		padding:1px 3px;
+		border-radius:3px;
+		font-weight:bold;
+	}
+
+  </style>
+</head>
+<body>
+
+<h3>Survey QC Assistant</h3>
+
+<div id="expectedText" contenteditable="true"
+data-placeholder="Paste question and response options here (formatting is checked)"></div>
+
+<button id="compareBtn">
+Compare Current Page
+</button>
+
+<div id="results"></div>
+
+<script src="config.js"></script>
+<script src="normalizer.js"></script>
+<script src="matcher.js"></script>
+<script src="comparer.js"></script>
+<script src="diff.js"></script>
+<script src="formatter.js"></script>
+<script src="renderer.js"></script>
+<script src="formatting.js"></script>
+<script src="popup.js"></script>
+
+</body>
+</html>

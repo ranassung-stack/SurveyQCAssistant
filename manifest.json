@@ -1,0 +1,28 @@
+{
+  "manifest_version": 3,
+  "name": "Survey QC Assistant",
+  "version": "1.0",
+  "description": "Compare survey text against specifications",
+  "permissions": ["activeTab", "scripting"],
+  "host_permissions": ["<all_urls>"],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+		"*://*.decipherinc.com/*",
+		"*://*.surveyanalytics.com/*",
+		"*://*.qualtrics.com/*",
+		"*://*.forsta.com/*",
+		"*://*.confirmit.com/*",
+		"*://*.survey.yougov.com/*",
+		"*://preview-emea.yougov.com/*",
+		"*://preview-us.yougov.com/*",
+		"*://survey2.yougov.com/*",
+		"http://localhost/*"
+],
+      "js": ["content.js"]
+    }
+  ]
+}
